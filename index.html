@@ -513,25 +513,25 @@ initPetalRain();
                     // Apply a unified scale shift to the single layout frame
                     clone.style.transform = `scale(0.65) scaleY(0.7) rotate(${tilt})`;
                     
-                    finalBox.appendChild(clone);
-                });
-            }
-
-            navigateTo(3);
-
-                 setTimeout(() => { isWrapping = false; }, 1000);
+                     finalBox.appendChild(clone);
+            });
         }
 
-        // 📳 MOBILE HAPTIC ENGINE BASE
-        function triggerHapticFeedback() {
-            if (window.navigator && window.navigator.vibrate) {
-                window.navigator.vibrate(15);
-            }
-        }
+        navigateTo(3);
+        setTimeout(() => { isWrapping = false; }, 1000);
+    }
 
-    </script>
+    // 📳 MOBILE HAPTIC ENGINE BASE (Now completely separate and clean!)
+    function triggerHapticFeedback() {
+        if (window.navigator && window.navigator.vibrate) {
+            window.navigator.vibrate(15);
+        }
+    }
+
+</script>
 </body>
 </html>
+
 
 
 
