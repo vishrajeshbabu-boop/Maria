@@ -296,6 +296,24 @@ Click on sound on top right to get music.</p>
             }
         }
         initParticles();
+        // 🕰️ TIME OF DAY AUTOMATED BACKGROUND TRACKER
+        function updateBackgroundTheme() {
+            const canvas = document.querySelector('.phone-canvas');
+            if (canvas) {
+                const currentHour = new Date().getHours();
+                
+                // If it is between 6 PM (18) and 6 AM (6), turn on night mode
+                if (currentHour >= 18 || currentHour < 6) {
+                    canvas.classList.remove('daytime');
+                    canvas.classList.add('nighttime');
+                } else {
+                    canvas.classList.remove('nighttime');
+                    canvas.classList.add('daytime');
+                }
+            }
+        }
+        // Run the clock check the split second the page opens
+        updateBackgroundTheme();
 
         function navigateTo(screenNum) {
             document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
