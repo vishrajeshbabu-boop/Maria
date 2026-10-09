@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>A Bouquet for Maria</title>
+    <style>
+        /* 📱 IPHONE PORTRAIT SCREEN STANDARDIZATION */
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        body {
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+            background-color: #1a1a2e; 
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            overflow: hidden;
+        }
+
+        /* Fixed container simulating iPhone dimensions */
+        .phone-canvas {
+            width: 100%;
+            max-width: 412px;
+            height: 100%;
+            max-height: 892px; 
+            background: linear-gradient(180deg, #fcefe9 0%, #fbe3d8 100%);
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+        }
+
+        /* SCREEN SEQUENCING MANAGEMENT */
+        .screen {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            display: flex;
+            flex-direction: column;
+            padding: 30px;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.6s ease-in-out;
+            z-index: 1;
+        }
+        .screen.active {
+            opacity: 1;
+            pointer-events: auto;
+            z-index: 2;
+        }
+
+        /* GLOBAL TYPOGRAPHY & INTERACTIVE BUTTONS */
+        h1 { color: #d63031; font-weight: 300; font-size: 26px; text-align: center; margin-top: 20px; }
+        p { color: #57606f; text-align: center; font-size: 15px; line-height: 1.5; }
+        
+        .btn {
+            background: #ff7675; color: white; border: none; padding: 16px 32px;
+            border-radius: 30px; font-size: 16px; font-weight: 600; cursor: pointer;
+            margin: auto auto 40px auto; width: 80%; text-align: center;
+            box-shadow: 0 8px 15px rgba(255, 118, 117, 0.3);
+            transition: transform 0.2s;
+        }
+        .btn:active { transform: scale(0.96); }
+
+        /* AUDIO INTERACTIVE CONTROLLER BUTTON */
+        .audio-wrapper {
+            position: absolute; top: 20px; right: 20px; z-index: 10;
+        }
+        .audio-toggle {
+            background: white; border: none; width: 44px; height: 44px;
+            border-radius: 50%; font-size: 18px; display: flex;
+            justify-content: center; align-items: center; cursor: pointer;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+
+        /* ✨ PARTICLE SYSTEMS ENGINE BACKGROUND LAYER */
+        .particle-space {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            pointer-events: none; z-index: 3;
+        }
+        .sparkle {
+            position: absolute; background: white; border-radius: 50%;
+            pointer-events: none; opacity: 0;
+            animation: float-up var(--duration) linear infinite;
+        }
+        @keyframes float-up {
+            0% { transform: translateY(105vh) scale(0); opacity: 0; }
+            50% { opacity: var(--opacity); }
+            100% { transform: translateY(-10vh) scale(1); opacity: 0; }
+        }
+
+        /* 💐 BOUQUET BUILDING LAYOUT INTERACTION MECHANICS */
+        .menu-grid {
+            display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin-top: 20px;
+        }
+        .menu-card {
+            background: white; border: 2px solid transparent; border-radius: 16px;
+            padding: 15px 5px; text-align: center; cursor: pointer;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05); transition: all 0.3s;
+        }
+        .menu-card:active { transform: scale(0.95); }
+        .menu-card.selected { border-color: #ff7675; background: #fff5f5; }
+        .menu-icon { font-size: 32px; display: block; margin-bottom: 5px; }
+        .menu-label { font-size: 12px; color: #2d3436; font-weight: 600; }
+
+        /* BOUQUET LIVE DISPLAY VIEWPORT PROPORTIONS */
+        .stage-view {
+            flex: 1; position: relative; margin: 20px 0;
+            background: rgba(255, 255, 255, 0.4); border-radius: 24px;
+            border: 1px dashed rgba(214, 48, 49, 0.2); overflow: hidden;
+        }
+
+        /* THE LIVE FLOWER RENDERING INFRASTRUCTURE */
+        .flower-node {
+            position: absolute; width: 120px; height: 120px;
+            cursor: pointer; transform-origin: bottom center;
+        }
+        .stem-node {
+            position: absolute; width: 6px; background: #2ecc71;
+            bottom: 0; left: 57px; border-radius: 3px;
+            transform-origin: bottom center; transform: scaleY(0);
+            transition: transform 1.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .flower-node.grown .stem-node { transform: scaleY(1); }
+
+        .head-node {
+            position: absolute; width: 100%; height: 100%; top: -40px;
+            transform: scale(0); transition: transform 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            transition-delay: 1s;
+        }
+        .flower-node.grown .head-node { transform: scale(0.85); }
+        .flower-node.tapped .head-node { transform: scale(1.15); }
+
+        /* INDIVIDUAL PETAL PROPERTY OVERRIDES BASED ON TYPE DEFINITIONS */
+        .petal-node { position: absolute; width: 40px; height: 40px; border-radius: 50%; }
+        .center-node { position: absolute; width: 30px; height: 30px; background: #f1c40f; border-radius: 50%; top: 45px; left: 45px; z-index: 6; }
+
+        /* Rose Archetype Geometry Configuration */
+        .type-rose .petal-node { background: #e84393; top: 40px; left: 40px; }
+        .type-rose .r1 { transform: translate(-18px, 0); }
+        .type-rose .r2 { transform: translate(18px, 0); }
+        .type-rose .r3 { transform: translate(0, -18px); }
+        .type-rose .r4 { transform: translate(0, 18px); }
+        .type-rose .r5 { background: #d63031; width: 30px; height: 30px; top: 45px; left: 45px; transform: rotate(30deg); z-index: 5; }
+
+        /* Tulip Archetype Geometry Configuration */
+        .type-tulip .center-node { display: none; }
+        .type-tulip .petal-node { background: #a29bfe; width: 35px; height: 60px; border-radius: 100% 100% 0 0; bottom: 40px; transform-origin: bottom center; }
+        .type-tulip .t1 { left: 25px; transform: rotate(-15deg); }
+        .type-tulip .t2 { left: 60px; transform: rotate(15deg); }
+        .type-tulip .t3 { left: 42px; height: 68px; background: #b8b2ff; z-index: 4; }
+
+        /* Sunflower Archetype Geometry Configuration */
+        .type-sunflower .center-node { background: #784513; width: 34px; height: 34px; top: 43px; left: 43px; }
+        .type-sunflower .petal-node { background: #ffbe76; width: 16px; height: 48px; border-radius: 40%; top: 36px; left: 52px; transform-origin: center bottom; }
+        .type-sunflower .s1 { transform: rotate(0deg); }   .type-sunflower .s2 { transform: rotate(45deg); }
+        .type-sunflower .s3 { transform: rotate(90deg); }  .type-sunflower .s4 { transform: rotate(135deg); }
+        .type-sunflower .s5 { transform: rotate(180deg); } .type-sunflower .s6 { transform: rotate(225deg); }
+        .type-sunflower .s7 { transform: rotate(270deg); } .type-sunflower .s8 { transform: rotate(315deg); }
+
+        /* VASE COMPONENT PLACEMENT OVERLAY */
+        .vase-overlay {
+            position: absolute; width: 90px; height: 110px; background: rgba(255, 255, 255, 0.65);
+            bottom: -5px; left: 135px; border-radius: 10px 10px 30px 30px;
+            border: 2px solid rgba(255,255,255,0.6); z-index: 1;
+        }
+
+        /* FINAL SCREEN LAYOUT CONSTRAINTS */
+        .final-card {
+            background: white; border-radius: 24px; padding: 35px 25px;
+            margin: auto 0; box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+            text-align: center; border: 1px solid #fae1d6;
+        }
+        .heart-icon { font-size: 54px; color: #e84393; animation: pulse 1.5s infinite; margin-bottom: 15px; }
+        @keyframes pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.1); } }
+    </style>
+</head>
+<body>
+
+    <div class="phone-canvas">
+        
+        <!-- AUDIO OVERLAY CONTROLLER -->
+        <div class="audio-wrapper">
+            <button class="audio-toggle" id="audioBtn" onclick="toggleAudio()">🔊</button>
+        </div>
+        <!-- OPTIONAL BACKGROUND AUDIO RESOURCE CONTAINER -->
+        <audio id="bgMusic" loop src="https://files.catbox.moe/jvvkdg.mp3"></audio>
+
+        <!-- ✨ BACKGROUND PARTICLE EMISSION CANOPY -->
+        <div class="particle-space" id="particleSpace"></div>
+
+        <!-- SCREEN 1: THE REVEAL GATEWAY -->
+        <div class="screen active" id="screen1">
+            <div style="margin: auto 0; text-align: center;">
+                <div style="font-size: 65px; margin-bottom: 10px;">💝</div>
+                <h1>A Gift For Maria</h1>
+                <p>Good Luck Nerd ❤️
+Click on sound on top right to get music.</p>
+            </div>
+            <button class="btn" onclick="navigateTo(2)">Open the Garden</button>
+        </div>
+
+        <!-- SCREEN 2: BOUQUET ARRANGER SELECTION LAYER -->
+        <div class="screen" id="screen2">
+            <h1>Build Your Bouquet</h1>
+            <p>Select any flower type from the shelf below, then click inside the greenhouse vase to plant it</p>
+            
+            <div class="stage-view" id="stage" onclick="handleStageClick(event)">
+                <div class="vase-overlay"onclick="handleStageClick(event)"></div>
+            </div>
+
+            <div class="menu-grid">
+                <div class="menu-card selected" id="opt-rose" onclick="selectType('rose')">
+                    <span class="menu-icon">🌹</span>
+                    <span class="menu-label">Classic Rose</span>
+                </div>
+                <div class="menu-card" id="opt-tulip" onclick="selectType('tulip')">
+                    <span class="menu-icon">🌷</span>
+                    <span class="menu-label">Soft Tulip</span>
+                </div>
+                <div class="menu-card" id="opt-sunflower" onclick="selectType('sunflower')">
+                    <span class="menu-icon">🌻</span>
+                    <span class="menu-label">Bright Sun</span>
+                </div>
+            </div>
+
+            <button class="btn" style="margin-top: 25px; margin-bottom: 10px;" onclick="wrapAndNavigate()">Wrap Bouquet Mate</button>
+
+        </div>
+
+        <!-- SCREEN 3: FINAL NOTE -->
+                <div class="screen" id="screen3">
+              <!-- This is the empty box that will hold her exact flower choices -->
+        <div id="finalBouquetBox" style="width: 100%; height: 180px; position: relative; margin-top: 10px; background: rgba(255,255,255,0.3); border-radius: 20px; overflow: hidden;">
+            <div class="vase-overlay" style="width: 50px; height: 60px; left: calc(50% - 25px); border-radius: 5px 5px 15px 15px; position: absolute; bottom: -5px; background: rgba(255, 255, 255, 0.25); border: 2px solid rgba(255,255,255,0.6); z-index: 1;"></div>
+        </div> 
+            <div class="final-card">
+
+                <div class="heart-icon">❤️</div>
+                <p style="font-size: 16px; color: #2d3436; font-style: italic; font-weight: 500;">
+                    "Hey Dr Beta, Hope this makes u smile during ur assessments. You'll do great!."
+                </p>
+            </div>
+            
+            <div style="text-align: center; margin: 20px 0 auto 0;">
+                <h2 style="color: #d63031; font-weight: 300; font-size: 32px; margin: 0; letter-spacing: 1px;">You’ve got this!</h2>
+            </div>
+            
+            <button class="btn" style="background: #2d3436; margin-bottom: 20px;" onclick="resetApp()">Reset Garden 🔄</button>
+        </div>
+
+    <!-- JAVASCRIPT LOGIC ENGINE -->
+    <script>
+        let currentSelectedType = 'rose';
+        let flowerCount = 0;
+        const maxFlowers = 8;
+
+        function initParticles() {
+            const container = document.getElementById('particleSpace');
+            for(let i = 0; i < 20; i++) {
+                const sparkle = document.createElement('div');
+                sparkle.className = 'sparkle';
+                sparkle.style.left = Math.random() * 100 + '%';
+                sparkle.style.width = sparkle.style.height = (Math.random() * 6 + 4) + 'px';
+                sparkle.style.setProperty('--duration', (Math.random() * 6 + 6) + 's');
+                sparkle.style.setProperty('--opacity', Math.random() * 0.4 + 0.2);
+                sparkle.style.animationDelay = (Math.random() * 5) + 's';
+                container.appendChild(sparkle);
+            }
+        }
+        initParticles();
+
+        function navigateTo(screenNum) {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.getElementById('screen' + screenNum).classList.add('active');
+        }
+
+        function selectType(type) {
+            currentSelectedType = type;
+            document.querySelectorAll('.menu-card').forEach(c => c.classList.remove('selected'));
+            document.getElementById('opt-' + type).classList.add('selected');
+        }
+
+        function handleStageClick(e) {
+   // 🛑 BOUNDARY CHECK: If she clicks outside the pot, stop immediately and do nothing!
+            if (!e.target.classList.contains('vase-overlay')) {
+                return;
+            }
+            if (flowerCount >= maxFlowers) return;
+            if (e.target.closest('.flower-node')) return; 
+
+            const stage = document.getElementById('stage');
+            const rect = stage.getBoundingClientRect();
+            
+            const clickX = e.clientX - rect.left;
+            const clickY = e.clientY - rect.top;
+
+            const flowerNode = document.createElement('div');
+            flowerNode.className = `flower-node type-${currentSelectedType}`;
+            flowerNode.style.left = (clickX - 60) + 'px';
+            flowerNode.style.top = (clickY - 110) + 'px';
+
+            const heightTarget = rect.height - clickY;
+
+            let petalBlueprint = '';
+            if(currentSelectedType === 'rose') {
+                petalBlueprint = `
+                    <div class="petal-node r1"></div><div class="petal-node r2"></div>
+                    <div class="petal-node r3"></div><div class="petal-node r4"></div>
+                    <div class="petal-node r5"></div><div class="center-node"></div>
+                `;
+            } else if(currentSelectedType === 'tulip') {
+                petalBlueprint = `<div class="petal-node t1"></div><div class="petal-node t2"></div><div class="petal-node t3"></div>`;
+            } else if(currentSelectedType === 'sunflower') {
+                petalBlueprint = `
+                    <div class="petal-node s1"></div><div class="petal-node s2"></div>
+                    <div class="petal-node s3"></div><div class="petal-node s4"></div>
+                    <div class="petal-node s5"></div><div class="petal-node s6"></div>
+                    <div class="petal-node s7"></div><div class="petal-node s8"></div>
+                    <div class="center-node"></div>
+                `;
+            }
+
+            flowerNode.innerHTML = `
+                <div class="stem-node" style="height: ${heightTarget}px;"></div>
+                <div class="head-node">${petalBlueprint}</div>
+            `;
+
+            flowerNode.addEventListener('click', function(event) {
+                event.stopPropagation(); 
+                flowerNode.classList.toggle('tapped');
+            });
+
+            stage.appendChild(flowerNode);
+            flowerCount++;
+
+            setTimeout(() => { flowerNode.classList.add('grown'); }, 50);
+        }
+
+        function toggleAudio() {
+            const music = document.getElementById('bgMusic');
+            const btn = document.getElementById('audioBtn');
+            if (music.paused) {
+                music.play().catch(err => console.log("Interaction required."));
+                btn.innerText = "🔊";
+                btn.style.background = "#fff5f5";
+            } else {
+                music.pause();
+                btn.innerText = "🔇";
+                btn.style.background = "white";
+            }
+        }
+
+        function resetApp() {
+            flowerCount = 0;
+            document.querySelectorAll('.flower-node').forEach(n => n.remove());
+            navigateTo(1);
+        }
+        // THE COPIER FUNCTION
+              // THE MEMORY LOGIC THAT COPIES HER CHOSEN FLOWERS TO THE END PAGE
+             let isWrapping = false;
+
+        function wrapAndNavigate() {
+            if (isWrapping) return;
+            isWrapping = true;
+
+            const finalBox = document.getElementById('finalBouquetBox');
+            if (finalBox) {
+                // Wipe the final container box completely clean
+                finalBox.innerHTML = '<div class="vase-overlay" style="width: 50px; height: 60px; left: calc(50% - 25px); border-radius: 5px 5px 15px 15px; position: absolute; bottom: -5px; background: rgba(255, 255, 255, 0.4); border: 2px solid rgba(255,255,255,0.6); z-index: 1;"></div>';
+
+                // Strictly target ONLY the original flowers built on Screen 2
+                const builtFlowers = document.querySelectorAll('#stage > .flower-node');
+                
+                builtFlowers.forEach((flower, index) => {
+                    // Create a clean, stripped-down clone of the flower structure
+                    const clone = flower.cloneNode(true);
+                    
+                    // 🛑 THE STRUCTURAL CLEANER: Completely wipe out any double animation elements
+                    clone.className = "flower-node"; 
+                    clone.style.animation = "none";
+                    clone.style.transition = "none";
+                    
+                    // Force all inner parts (stems and heads) to stop animating entirely
+                    clone.querySelectorAll('*').forEach(child => {
+                        child.style.animation = "none";
+                        child.style.transition = "none";
+                    });
+
+                    // Match the original flower type look without retriggering its script
+                    if (flower.classList.contains('type-rose')) clone.classList.add('type-rose');
+                    if (flower.classList.contains('type-tulip')) clone.classList.add('type-tulip');
+                    if (flower.classList.contains('type-sunflower')) clone.classList.add('type-sunflower');
+                    
+                    // Force the stem to stay permanently tall without running a grow effect
+                    const stem = clone.querySelector('.stem-node');
+                    if (stem) stem.style.transform = "scaleY(1)";
+                    
+                    // Force the flower head to stay fully open without blooming again
+                    const head = clone.querySelector('.head-node');
+                    if (head) head.style.transform = "scale(0.85)";
+
+                    // Position the clean bundle neatly in the vase opening
+                    clone.style.left = "calc(50% - 60px)"; 
+                    clone.style.bottom = "0px";
+                    clone.style.top = "35px"; 
+                    
+                let tilt = "0deg";
+                    if (index % 2 === 0) tilt = "-12deg";
+                    else if (index % 3 === 0) tilt = "12deg";
+   // 🌹 SCALE BOOST: If it's a rose, make it bigger! If it's a tulip or sunflower, keep it normal size.
+                    if (flower.classList.contains('type-rose')) {
+                        clone.style.transform = `scale(1.50) scaleY(0.75) rotate(${tilt})`;
+                    } else {
+                        clone.style.transform = `scale(0.55) scaleY(0.65) rotate(${tilt})`;
+                    }
+                    // Apply a unified scale shift to the single layout frame
+                    clone.style.transform = `scale(0.65) scaleY(0.7) rotate(${tilt})`;
+                    
+                    finalBox.appendChild(clone);
+                });
+            }
+
+            navigateTo(3);
+
+            setTimeout(() => { isWrapping = false; }, 1000);
+        }
+
+    </script>
+</body>
+</html>
+
+
+
+    </script>
+</body>
+</html>
+
+
