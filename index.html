@@ -349,7 +349,7 @@ Click on audio icon on top right to get south indian bangers.</p>
                 const currentHour = new Date().getHours();
                 
                 // If it is between 6 PM (18) and 6 AM (6), turn on night mode
-                if (currentHour <= 18 || currentHour < 6) {
+                if (currentHour >= 18 || currentHour < 6) {
                     canvas.classList.remove('daytime');
                     canvas.classList.add('nighttime');
                 } else {
