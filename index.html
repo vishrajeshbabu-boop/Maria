@@ -501,9 +501,11 @@ Click on audio icon on top right to get south indian bangers.</p>
                     else if (index % 3 === 0) tilt = "12deg";
    // 🌹 SCALE BOOST: If it's a rose, make it bigger! If it's a tulip or sunflower, keep it normal size.
                     if (flower.classList.contains('type-rose')) {
-                        clone.style.transform = `scale(1.50) scaleY(1.10) rotate(${tilt})`;
+                        clone.style.transform = `scale(1.10) scaleY(0.75) rotate(${tilt})`;
+                         } else if (flower.classList.contains('type-sunflower')) {
+                clone.style.transform = `scale(1.05) scaleY(0.75) rotate(${tilt})`;
                     } else {
-                        clone.style.transform = `scale(0.55) scaleY(0.75) rotate(${tilt})`;
+                        clone.style.transform = `scale(1.00) scaleY(0.75) rotate(${tilt})`;
                     }
                     
                     finalBox.appendChild(clone);
