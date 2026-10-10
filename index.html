@@ -276,12 +276,11 @@ Click on audio icon on top right to get south indian bangers.</p>
 
         <!-- SCREEN 3: FINAL NOTE -->
                 <div class="screen" id="screen3">
-            <div id="finalBouquetBox" style="width: 100%; height: 260px; position: relative; margin-top: 15px; background: rgba(255,255,255,0.3); border-radius: 24px; overflow: hidden; box-shadow: inset 0 4px 12px rgba(0,0,0,0.02);">
-                <!-- 🩺 Premium scaled career icon -->
-                <div style="position: absolute; bottom: 25px; left: calc(50% - 20px); font-size: 38px; z-index: 999; pointer-events: none; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1));">🩺</div>
-                <!-- 🏺 Bold, upscaled clear glass vase layout -->
-                <div class="vase-overlay" style="width: 75px; height: 90px; left: calc(50% - 37.5px); border-radius: 8px 8px 24px 24px; position: absolute; bottom: -5px; background: rgba(255, 255, 255, 0.45); border: 2.5px solid rgba(255,255,255,0.7); z-index: 1;"></div>
-            </div>
+              <!-- This is the empty box that will hold her exact flower choices -->
+        <div id="finalBouquetBox" style="width: 100%; height: 180px; position: relative; margin-top: 10px; background: rgba(255,255,255,0.3); border-radius: 20px; overflow: hidden;">
+              <div style="position: absolute; bottom: 35px; left: calc(50% - 15px); font-size: 24px; z-index: 10;">🩺</div>
+            <div class="vase-overlay" style="width: 50px; height: 60px; left: calc(50% - 25px); border-radius: 5px 5px 15px 15px; position: absolute; bottom: -5px; background: rgba(255, 255, 255, 0.25); border: 2px solid rgba(255,255,255,0.6); z-index: 1;"></div>
+        </div> 
             <div class="final-card">
                  <div style="position: absolute; top: 10px; right: 15px; font-size: 18px; opacity: 0.3;">🐾</div>
     <div style="position: absolute; bottom: 10px; left: 15px; font-size: 18px; opacity: 0.3;">🐾</div>
@@ -493,21 +492,21 @@ Click on audio icon on top right to get south indian bangers.</p>
                     if (head) head.style.transform = "scale(0.85)";
 
                     // Position the clean bundle neatly in the vase opening
-                    clone.style.left = "calc(50% - 17px)"; 
-                    clone.style.bottom = "110px";
-                    clone.style.top="auto";
+                    clone.style.left = "calc(50% - 60px)"; 
+                    clone.style.bottom = "0px";
+                    clone.style.top = "35px"; 
                     
                 let tilt = "0deg";
                     if (index % 2 === 0) tilt = "-12deg";
                     else if (index % 3 === 0) tilt = "12deg";
    // 🌹 SCALE BOOST: If it's a rose, make it bigger! If it's a tulip or sunflower, keep it normal size.
                     if (flower.classList.contains('type-rose')) {
-                        clone.style.transform = `scale(1.10) scaleY(0.75) rotate(${tilt})`;
-                         } else if (flower.classList.contains('type-sunflower')) {
-                clone.style.transform = `scale(1.05) scaleY(0.75) rotate(${tilt})`;
+                        clone.style.transform = `scale(1.50) scaleY(0.75) rotate(${tilt})`;
                     } else {
-                        clone.style.transform = `scale(1.00) scaleY(0.75) rotate(${tilt})`;
+                        clone.style.transform = `scale(0.55) scaleY(0.65) rotate(${tilt})`;
                     }
+                    // Apply a unified scale shift to the single layout frame
+                    clone.style.transform = `scale(0.65) scaleY(0.7) rotate(${tilt})`;
                     
                     finalBox.appendChild(clone);
                 });
